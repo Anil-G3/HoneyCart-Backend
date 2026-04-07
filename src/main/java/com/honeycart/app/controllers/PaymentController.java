@@ -1,14 +1,13 @@
 package com.honeycart.app.controllers;
 
 import java.math.BigDecimal;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,24 +15,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.honeycart.app.entities.OrderItem;
 import com.honeycart.app.entities.User;
-import com.honeycart.app.repositories.UserRepository;
 import com.honeycart.app.services.PaymentServiceContract;
 import com.razorpay.RazorpayException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/payment")
 public class PaymentController {
 
     private PaymentServiceContract paymentService;
-    private UserRepository userRepository;
 
-    public PaymentController(PaymentServiceContract paymentService, UserRepository userRepository) {
+    public PaymentController(PaymentServiceContract paymentService) {
 		super();
 		this.paymentService = paymentService;
-		this.userRepository = userRepository;
 	}
 
 	/**
@@ -56,15 +51,16 @@ public class PaymentController {
             List<Map<String, Object>> cartItemsRaw = (List<Map<String, Object>>) requestBody.get("cartItems");
 
             // Convert cartItemsRaw to List<OrderItem>
-            List<OrderItem> cartItems = cartItemsRaw.stream().map(item -> {
+            List<OrderItem> cartItems = new ArrayList();
+            for (Map<String, Object> item : cartItemsRaw) {
                 OrderItem orderItem = new OrderItem();
                 orderItem.setProductId((Integer) item.get("productId"));
                 orderItem.setQuantity((Integer) item.get("quantity"));
                 BigDecimal pricePerUnit = new BigDecimal(item.get("price").toString());
                 orderItem.setPricePerUnit(pricePerUnit);
                 orderItem.setTotalPrice(pricePerUnit.multiply(BigDecimal.valueOf((Integer) item.get("quantity"))));
-                return orderItem;
-            }).collect(Collectors.toList());
+                cartItems.add(orderItem);
+            }
 
 
             // Call the payment service to create a Razorpay order

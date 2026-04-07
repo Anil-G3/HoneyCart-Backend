@@ -1,11 +1,12 @@
 package com.honeycart.app.controllers;
 
 import java.util.HashMap;
+
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.honeycart.app.dto.LoginRequest;
 import com.honeycart.app.entities.User;
+import com.honeycart.app.repositories.UserRepository;
 import com.honeycart.app.services.AuthServiceContract;
 
 import jakarta.servlet.http.Cookie;
@@ -20,15 +22,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/auth") 
 public class AuthController {
 
 	private final AuthServiceContract authService;
+	private final UserRepository userRepository;
 
-	public AuthController(AuthServiceContract authService) {
+	public AuthController(AuthServiceContract authService, UserRepository userRepository) {
 		super();
 		this.authService = authService;
+		this.userRepository = userRepository;
 	}
 	
 	@PostMapping("/login")
@@ -85,5 +88,42 @@ public class AuthController {
 			return ResponseEntity.status(500).body(errorResponse);
 		}
 	}
+	
+	@GetMapping("/session")
+	public ResponseEntity<?> getSession(HttpServletRequest request) {
+	    try {
+	        Cookie[] cookies = request.getCookies();
+	        if (cookies == null) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
+	        }
 
+	        String token = null;
+	        for (Cookie cookie : cookies) {
+	            if (cookie.getName().equals("authToken")) {
+	                token = cookie.getValue();
+	                break;
+	            }
+	        }
+
+	        if (token == null || !authService.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid or expired token"));
+	        }
+
+	        String username = authService.extractUsername(token);
+	        String role = authService.extractRole(token);
+
+	        User user = userRepository.findByUsername(username)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        Map<String, Object> responseBody = new HashMap<>();
+	        responseBody.put("username", username);
+	        responseBody.put("role", role);
+	        responseBody.put("email", user.getEmail());
+
+	        return ResponseEntity.ok(responseBody);
+
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
+	    }
+	}
 }

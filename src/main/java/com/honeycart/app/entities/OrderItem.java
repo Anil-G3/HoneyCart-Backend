@@ -37,7 +37,7 @@ public class OrderItem {
 	private BigDecimal totalPrice;
 	
 	public OrderItem() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public OrderItem(int id, Order order, int productId, int quantity, BigDecimal pricePerUnit,

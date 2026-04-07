@@ -14,7 +14,6 @@ import com.honeycart.app.entities.User;
 import com.honeycart.app.services.UserServiceContract;
 
 @RestController
-@CrossOrigin(origins="http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/users")
 public class UserController {
 

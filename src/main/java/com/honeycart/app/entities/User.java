@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,11 +44,12 @@ public class User {
 	@Column(nullable=false)
 	private LocalDateTime updatedAt = LocalDateTime.now();
 	
+	@JsonIgnore
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	List<CartItem> cartItems = new ArrayList<>();
+	private List<CartItem> cartItems = new ArrayList<>();
 	
 	public User() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public User(Integer userId, String username, String email, String password, Role role, LocalDateTime createdAt,
@@ -72,8 +75,6 @@ public class User {
 		this.updatedAt = updatedAt;
 	}
 	
-	
-
 	public Integer getUserId() {
 		return userId;
 	}
@@ -128,6 +129,13 @@ public class User {
 
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+	
+	public List<CartItem> getCartItems() {
+	    return cartItems;
+	}
+	public void setCartItems(List<CartItem> cartItems) {
+	    this.cartItems = cartItems;
 	}
 	
 }

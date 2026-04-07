@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.honeycart.app.adminservices.AdminBusinessServiceContract;
 import com.honeycart.app.entities.Order;
 import com.honeycart.app.entities.OrderItem;
+import com.honeycart.app.entities.OrderStatus;
 import com.honeycart.app.repositories.OrderItemRepository;
 import com.honeycart.app.repositories.OrderRepository;
 import com.honeycart.app.repositories.ProductRepository;
@@ -48,7 +49,7 @@ public class AdminBusinessService implements AdminBusinessServiceContract {
 
     @Override
     public Map<String, Object> calculateOverallBusiness() {
-        List<Order> successfulOrders = orderRepository.findAllByStatus("SUCCESS");
+        List<Order> successfulOrders = orderRepository.findAllByStatus(OrderStatus.SUCCESS);
         BigDecimal totalBusiness = orderRepository.calculateOverallBusiness();
         Map<String, Object> response = calculateBusinessMetrics(successfulOrders);
         response.put("totalBusiness", totalBusiness.doubleValue());
@@ -71,7 +72,7 @@ public class AdminBusinessService implements AdminBusinessServiceContract {
         }
 
         Map<String, Object> metrics = new HashMap<>();
-        metrics.put("totalRevenue", totalRevenue);
+        metrics.put("totalBusiness", totalRevenue);
         metrics.put("categorySales", categorySales);
         return metrics;
     }

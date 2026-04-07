@@ -19,7 +19,6 @@ import com.honeycart.app.services.ProductServiceContract;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/products")
 public class ProductController {
 	
@@ -81,20 +80,6 @@ public class ProductController {
 		}
 
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
 
 }

@@ -11,5 +11,6 @@ public interface AuthServiceContract {
 	public boolean validateToken(String token);
 	public String extractUsername(String token);
 	public void logout(User user);
+	public String extractRole(String token);
 	
 }

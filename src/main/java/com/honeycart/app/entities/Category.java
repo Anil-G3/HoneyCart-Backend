@@ -19,7 +19,7 @@ public class Category {
 	private String categoryName;
 	
 	public Category() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public Category(Integer categoryId, String categoryName) {

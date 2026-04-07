@@ -13,6 +13,7 @@ import com.honeycart.app.entities.CartItem;
 import com.honeycart.app.entities.Product;
 import com.honeycart.app.entities.User;
 import com.honeycart.app.repositories.CartRepository;
+import com.honeycart.app.repositories.ProductImageRepository;
 import com.honeycart.app.repositories.ProductRepository;
 import com.honeycart.app.repositories.UserRepository;
 import com.honeycart.app.services.CartServiceContract;
@@ -24,12 +25,14 @@ public class CartService implements CartServiceContract{
 	private ProductRepository productRepository;
 	private CartRepository cartRepository;
 	private UserRepository userRepository;
+	private final ProductImageRepository productImageRepository;
 	
-	public CartService(ProductRepository productRepository, CartRepository cartRepository, UserRepository userRepository) {
+	public CartService(ProductRepository productRepository, CartRepository cartRepository, UserRepository userRepository, ProductImageRepository productImageRepository) {
 		super();
 		this.productRepository = productRepository;
 		this.cartRepository = cartRepository;
 		this.userRepository = userRepository;
+		this.productImageRepository = productImageRepository;
 	}
 
 	@Override
@@ -73,7 +76,7 @@ public class CartService implements CartServiceContract{
 				Product product = cartItem.getProduct();
 
 				// Fetch product images from the ProductImageRepository
-				List<ProductImage> productImages = new ArrayList<>();
+				List<ProductImage> productImages = productImageRepository.findByProduct_ProductId(product.getProductId());
 				String imageUrl = (productImages != null && !productImages.isEmpty()) ? productImages.get(0).getImageUrl() : "default-image-url";
 
 				// Populate product details into the map

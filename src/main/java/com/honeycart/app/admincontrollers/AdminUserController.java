@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,10 +47,9 @@ public class AdminUserController {
          }
     }
 
-    @GetMapping("/getbyid")
-    public ResponseEntity<?> getUserById(@RequestBody Map<String, Integer> userRequest) {
+    @GetMapping("/getbyid/{userId}")
+    public ResponseEntity<?> getUserById(@PathVariable Integer userId) { 
     	 try {
-             Integer userId = userRequest.get("userId");
              User user = adminUserService.getUserById(userId);
              return ResponseEntity.status(HttpStatus.OK).body(user);
          } catch (IllegalArgumentException e) {

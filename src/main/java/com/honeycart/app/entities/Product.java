@@ -43,7 +43,7 @@ public class Product {
 	private LocalDateTime updatedAt;
 
 	public Product() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public Product(Integer productId, String name, String description, BigDecimal price, Integer stock,

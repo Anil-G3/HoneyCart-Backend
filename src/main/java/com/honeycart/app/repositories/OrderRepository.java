@@ -29,6 +29,6 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 	    BigDecimal calculateOverallBusiness();
 
 	    @Query("SELECT o FROM Order o WHERE o.status = :status")
-	    List<Order> findAllByStatus(String status);
+	    List<Order> findAllByStatus(OrderStatus status);
 	 
 }

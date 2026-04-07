@@ -137,5 +137,15 @@ public class AuthService implements AuthServiceContract{
 		jwtTokenRepository.deleteByUserId(user.getUserId());
 		
 	}
+	
+	@Override
+	public String extractRole(String token) {
+	    return Jwts.parserBuilder()
+	            .setSigningKey(SIGNING_KEY)
+	            .build()
+	            .parseClaimsJws(token)
+	            .getBody()
+	            .get("role", String.class);
+	}
 
 }

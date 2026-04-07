@@ -40,7 +40,7 @@ public class AuthenticationFilter implements Filter {
 		};
 
 		public AuthenticationFilter(AuthServiceContract authService, UserRepository userRepository) {
-			System.out.println("Filter Started.");
+			logger.info("AuthenticationFilter initialized.");
 			this.authService = authService;
 			this.userRepository = userRepository;
 		}
@@ -62,13 +62,12 @@ public class AuthenticationFilter implements Filter {
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
 			HttpServletResponse httpResponse = (HttpServletResponse) response;
 			
-			// 1. ALWAYS set CORS headers first so they apply to all responses (Success or Error)
 			setCORSHeader(httpResponse);
 			
 			String requestURI = httpRequest.getRequestURI();
 			logger.info("Request URI : {}", requestURI);
 			
-			// 2. Handle pre-flight (OPTIONS) requests immediately
+			// Handle pre-flight (OPTIONS)
 			if (httpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
 				httpResponse.setStatus(HttpServletResponse.SC_OK);
 				return;
@@ -106,7 +105,7 @@ public class AuthenticationFilter implements Filter {
 				return;
 			}
 			
-			if (requestURI.startsWith("/api/") && role != Role.CUSTOMER) {
+			if (requestURI.startsWith("/api/") && role != Role.CUSTOMER && role != Role.ADMIN) {
 				sendErrorResponse(httpResponse, HttpServletResponse.SC_FORBIDDEN, "Forbidden: Customer access required");
 				return;
 			}

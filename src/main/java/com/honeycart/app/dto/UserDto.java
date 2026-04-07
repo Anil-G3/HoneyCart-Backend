@@ -7,7 +7,7 @@ public class UserDto {
 	private String role;
 	
 	public UserDto() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public UserDto(String username, String email, String role) {

@@ -2,9 +2,9 @@ package com.honeycart.app.controllers;
 
 import java.util.Map;
 
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +19,6 @@ import com.honeycart.app.services.CartServiceContract;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/cart")
 public class CartController {
 
@@ -31,11 +30,9 @@ public class CartController {
 	}
 	
 	@PostMapping("/add")
-	@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 	public ResponseEntity<Void> addToCart(@RequestBody Map<String, Object> request, HttpServletRequest req) {
 		
 		User user = (User) req.getAttribute("authenticatedUser");
-		String username = (String) request.get("username");
 		int productId =(int) request.get("productId");
 		
 		int quantity = request.containsKey("quantity") ? (int) request.get("quantity") : 1;
@@ -60,7 +57,6 @@ public class CartController {
 	@PutMapping("/update")
 	public ResponseEntity<Void> updateCartItemQuantity(@RequestBody Map<String, Object> request, HttpServletRequest req) {
 		
-		String username = request.get("username").toString();
 		int productId = Integer.parseInt(request.get("productId").toString());
 		int quantity = Integer.parseInt(request.get("quantity").toString());
 		

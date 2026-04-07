@@ -42,7 +42,7 @@ public class Order {
 	private List<OrderItem> orderItems;
 
 	public Order() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public Order(String orderId, int userId, BigDecimal totalAmount, OrderStatus status, LocalDateTime createdAt,
@@ -67,8 +67,6 @@ public class Order {
 		this.updatedAt = updatedAt;
 		this.orderItems = orderItems;
 	}
-
-	// Getters and setters
 
 	public String getOrderId() {
 		return orderId;

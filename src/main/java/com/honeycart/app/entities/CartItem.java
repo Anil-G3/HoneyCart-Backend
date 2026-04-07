@@ -2,8 +2,10 @@ package com.honeycart.app.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -12,28 +14,28 @@ import jakarta.persistence.Table;
 @Table(name = "cart_items")
 public class CartItem {
 
-	@jakarta.persistence.Id
+	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer Id;
+	private Integer id;
 	
 	@ManyToOne
 	@JoinColumn(name = "user_id", nullable=false)
 	private User user;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id", nullable=false)
 	private Product product;
 	
-	@Column
+	@Column(nullable=false)
 	private int quantity;
 	
 	public CartItem() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public CartItem(Integer id, User user, Product product, int quantity) {
 		super();
-		Id = id;
+		this.id = id;
 		this.user = user;
 		this.product = product;
 		this.quantity = quantity;
@@ -47,11 +49,11 @@ public class CartItem {
 	}
 
 	public Integer getId() {
-		return Id;
+		return id;
 	}
 
 	public void setId(Integer id) {
-		Id = id;
+		this.id = id;
 	}
 
 	public User getUser() {

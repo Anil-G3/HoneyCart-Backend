@@ -25,13 +25,13 @@ public class AdminUserService implements AdminUserServiceContract {
 	    
 	    @Transactional
 	    public User modifyUser(Integer userId, String username, String email, String role) {
-	    	 // Check if the user exists
+
 	        Optional<User> userOptional = userRepository.findById(userId);
 	        if (userOptional.isEmpty()) {
 	            throw new IllegalArgumentException("User not found");
 	        }
 	        User existingUser = userOptional.get();
-	        // Update user fields
+
 	        if (username != null && !username.isEmpty()) {
 	            existingUser.setUsername(username);
 	        }
@@ -46,10 +46,8 @@ public class AdminUserService implements AdminUserServiceContract {
 	            }
 	        }
 
-	        // Delete associated JWT tokens
 	        jwtTokenRepository.deleteByUserId(userId);
 
-	        // Save updated user
 	        return userRepository.save(existingUser);
     }
 

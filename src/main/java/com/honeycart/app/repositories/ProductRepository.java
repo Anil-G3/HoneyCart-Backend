@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.honeycart.app.entities.Product;
+import com.honeycart.app.entities.ProductImage;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {

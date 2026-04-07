@@ -30,7 +30,7 @@ public class JWTToken {
 	private LocalDateTime expiresAt;
 	
 	public JWTToken() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public JWTToken(Integer tokenId, User user, String token, LocalDateTime expiresAt) {
