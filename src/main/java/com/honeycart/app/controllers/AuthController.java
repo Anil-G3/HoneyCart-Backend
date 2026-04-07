@@ -1,7 +1,6 @@
 package com.honeycart.app.controllers;
 
 import java.util.HashMap;
-
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -22,105 +21,94 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/api/auth") 
+@RequestMapping("/api/auth")
 public class AuthController {
 
-	private final AuthServiceContract authService;
-	private final UserRepository userRepository;
+    private final AuthServiceContract authService;
+    private final UserRepository userRepository;
 
-	public AuthController(AuthServiceContract authService, UserRepository userRepository) {
-		super();
-		this.authService = authService;
-		this.userRepository = userRepository;
-	}
-	
-	@PostMapping("/login")
-public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-    try {
-        User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
-        String token = authService.generateToken(user);
-        
-        Cookie cookie = new Cookie("authToken", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true); 
-        cookie.setPath("/");
-        cookie.setMaxAge(3600);
-        cookie.setAttribute("SameSite", "None"); 
-
-        response.addCookie(cookie);
-
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("message", "Login successful");
-        responseBody.put("role", user.getRole().name());
-        responseBody.put("username", user.getUsername());
-        
-        return ResponseEntity.ok(responseBody);
-        
-    } catch (RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+    public AuthController(AuthServiceContract authService, UserRepository userRepository) {
+        super();
+        this.authService = authService;
+        this.userRepository = userRepository;
     }
-}
-    
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        try {
+            User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
+            String token = authService.generateToken(user);
+
+            response.addHeader("Set-Cookie",
+                String.format("authToken=%s; HttpOnly; Secure; Path=/; Max-Age=3600; SameSite=None", token));
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("message", "Login successful");
+            responseBody.put("role", user.getRole().name());
+            responseBody.put("username", user.getUsername());
+
+            return ResponseEntity.ok(responseBody);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(HttpServletRequest request, HttpServletResponse response) {
         try {
             User user = (User) request.getAttribute("authenticatedUser");
             authService.logout(user);
-            
-          
-            Cookie cookie = new Cookie("authToken", null);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true); 
-            cookie.setAttribute("SameSite", "None");
-            cookie.setMaxAge(0);
-            cookie.setPath("/");
-            response.addCookie(cookie);
-            
+
+            response.addHeader("Set-Cookie",
+                "authToken=; HttpOnly; Secure; Path=/; Max-Age=0; SameSite=None");
+
             Map<String, String> responseBody = new HashMap<>();
             responseBody.put("message", "Logout successful");
             return ResponseEntity.ok(responseBody);
+
         } catch (RuntimeException e) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("message", "Logout failed");
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
-	
-	@GetMapping("/session")
-	public ResponseEntity<?> getSession(HttpServletRequest request) {
-	    try {
-	        Cookie[] cookies = request.getCookies();
-	        if (cookies == null) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
-	        }
 
-	        String token = null;
-	        for (Cookie cookie : cookies) {
-	            if (cookie.getName().equals("authToken")) {
-	                token = cookie.getValue();
-	                break;
-	            }
-	        }
+    @GetMapping("/session")
+    public ResponseEntity<?> getSession(HttpServletRequest request) {
+        try {
+            Cookie[] cookies = request.getCookies();
+            if (cookies == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
+            }
 
-	        if (token == null || !authService.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid or expired token"));
-	        }
+            String token = null;
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("authToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
 
-	        String username = authService.extractUsername(token);
-	        String role = authService.extractRole(token);
+            if (token == null || !authService.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid or expired token"));
+            }
 
-	        User user = userRepository.findByUsername(username)
-	                .orElseThrow(() -> new RuntimeException("User not found"));
+            String username = authService.extractUsername(token);
+            String role = authService.extractRole(token);
 
-	        Map<String, Object> responseBody = new HashMap<>();
-	        responseBody.put("username", username);
-	        responseBody.put("role", role);
-	        responseBody.put("email", user.getEmail());
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-	        return ResponseEntity.ok(responseBody);
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("username", username);
+            responseBody.put("role", role);
+            responseBody.put("email", user.getEmail());
 
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
-	    }
-	}
+            return ResponseEntity.ok(responseBody);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
+        }
+    }
 }
