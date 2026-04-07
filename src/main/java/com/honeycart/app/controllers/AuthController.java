@@ -35,59 +35,57 @@ public class AuthController {
 	}
 	
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-		try {
-			
-			User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
-			
-			String token = authService.generateToken(user);
-			
-			Cookie cookie = new Cookie("authToken", token);
-			cookie.setHttpOnly(true);
-			cookie.setSecure(false);
-			cookie.setPath("/");
-			cookie.setMaxAge(3600);
-			cookie.setDomain("localhost");
-			response.addCookie(cookie);
-			
-			//Optional but useful
-			response.addHeader("Set-Cookie", String.format("authToken=%s; HttpOnly; Path=/; Max-Age=3600; SameSite=None", token));
-			
-			Map<String, Object> responseBody = new HashMap<>();
-			responseBody.put("message", "Login successful");
-			responseBody.put("role", user.getRole().name());
-			responseBody.put("username", user.getUsername());
-			
-			return ResponseEntity.ok(responseBody);
-			
-			
-		} catch (RuntimeException e) {
-		
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
-			
-		}
-		
-	}
-	
-	@PostMapping("/logout")
-	public ResponseEntity<Map<String, String>> logout(HttpServletRequest request, HttpServletResponse response) {
-		try {
-			User user = (User) request.getAttribute("authenticatedUser");
-			authService.logout(user);
-			Cookie cookie = new Cookie("authToken", null);
-			cookie.setHttpOnly(true);
-			cookie.setMaxAge(0);
-			cookie.setPath("/");
-			response.addCookie(cookie);
-			Map<String, String> responseBody = new HashMap<>();
-			responseBody.put("message", "Logout successful");
-			return ResponseEntity.ok(responseBody);
-		} catch (RuntimeException e) {
-			Map<String, String> errorResponse = new HashMap<>();
-			errorResponse.put("message", "Logout failed");
-			return ResponseEntity.status(500).body(errorResponse);
-		}
-	}
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        try {
+            
+            User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
+            String token = authService.generateToken(user);
+            
+            Cookie cookie = new Cookie("authToken", token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true); // REQUIRED: Must be true for cross-origin (HTTPS)
+            cookie.setPath("/");
+            cookie.setMaxAge(3600);
+            cookie.setAttribute("SameSite", "None");
+            
+            response.addCookie(cookie);
+            
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("message", "Login successful");
+            responseBody.put("role", user.getRole().name());
+            responseBody.put("username", user.getUsername());
+            
+            return ResponseEntity.ok(responseBody);
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            User user = (User) request.getAttribute("authenticatedUser");
+            authService.logout(user);
+            
+          
+            Cookie cookie = new Cookie("authToken", null);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true); 
+            cookie.setAttribute("SameSite", "None");
+            cookie.setMaxAge(0);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+            
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("message", "Logout successful");
+            return ResponseEntity.ok(responseBody);
+        } catch (RuntimeException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Logout failed");
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
 	
 	@GetMapping("/session")
 	public ResponseEntity<?> getSession(HttpServletRequest request) {
