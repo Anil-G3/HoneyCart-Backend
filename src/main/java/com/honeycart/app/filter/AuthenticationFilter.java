@@ -77,6 +77,11 @@ public class AuthenticationFilter implements Filter {
                 chain.doFilter(request, response);
                 return;
             }
+
+            if (requestURI.equals("/ping")) {
+                chain.doFilter(request, response);
+                return;
+            }
             
             // Extract and validate the token
             String token = getAuthTokenFromCookies(httpRequest);
