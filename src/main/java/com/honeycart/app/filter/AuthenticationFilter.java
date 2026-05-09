@@ -34,7 +34,8 @@ public class AuthenticationFilter implements Filter {
         
         private final String[] UNAUTHENTICATED_PATHS = {
             "/api/users/register",
-            "/api/auth/login"
+            "/api/auth/login",
+            "/ping"
         };
 
         public AuthenticationFilter(AuthServiceContract authService, UserRepository userRepository) {
@@ -74,11 +75,6 @@ public class AuthenticationFilter implements Filter {
             
             // Allow unauthenticated parts
             if (Arrays.asList(UNAUTHENTICATED_PATHS).contains(requestURI)) {
-                chain.doFilter(request, response);
-                return;
-            }
-
-            if (requestURI.equals("/ping")) {
                 chain.doFilter(request, response);
                 return;
             }
