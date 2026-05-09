@@ -13,7 +13,7 @@ public class PingController {
      * by giving this class url which does not require any authentication....
      */
 
-    @GetMapping("/")
+    @GetMapping("/ping")
     public String ping() {
         return "Backend Awake....!!!";
     }
