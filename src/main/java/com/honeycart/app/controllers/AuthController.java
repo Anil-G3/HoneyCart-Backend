@@ -40,7 +40,11 @@ public class AuthController {
             String token = authService.generateToken(user);
 
             response.addHeader("Set-Cookie",
-                String.format("authToken=%s; HttpOnly; Secure; Path=/; Max-Age=3600; SameSite=None", token));
+                String.format(
+                    "authToken=%s; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=3600",
+                    token
+                )
+            );
 
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("message", "Login successful");
