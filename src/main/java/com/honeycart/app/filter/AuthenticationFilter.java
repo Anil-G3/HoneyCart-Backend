@@ -35,6 +35,7 @@ public class AuthenticationFilter implements Filter {
         private final String[] UNAUTHENTICATED_PATHS = {
             "/api/users/register",
             "/api/auth/login",
+            "/api/auth/session",
             "/ping"
         };
 
