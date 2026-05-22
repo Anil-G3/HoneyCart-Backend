@@ -41,7 +41,7 @@ public class AuthController {
 
             response.addHeader("Set-Cookie",
                 String.format(
-                    "authToken=%s; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=86400",
+                    "authToken=%s; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=86400",
                     token
                 )
             );
@@ -65,7 +65,7 @@ public class AuthController {
             authService.logout(user);
 
             response.addHeader("Set-Cookie",
-                "authToken=; HttpOnly; Secure; Path=/; Max-Age=0; SameSite=Lax");
+                "authToken=; HttpOnly; Secure; Path=/; Max-Age=0; SameSite=None");
 
             Map<String, String> responseBody = new HashMap<>();
             responseBody.put("message", "Logout successful");

@@ -79,7 +79,7 @@ public class AuthService implements AuthServiceContract{
 		.setSubject(user.getUsername())
 		.claim("role", user.getRole().name())
 		.setIssuedAt(new Date())
-		.setExpiration(new Date(System.currentTimeMillis() + 3600000))
+		.setExpiration(new Date(System.currentTimeMillis() + 86400000))
 		.signWith(SIGNING_KEY , SignatureAlgorithm.HS512)
 		.compact();
 
@@ -88,7 +88,7 @@ public class AuthService implements AuthServiceContract{
 	@Override
 	public void saveToken(User user, String token) {
 		
-		JWTToken jwtToken = new JWTToken(user, token, LocalDateTime.now().plusHours(1));
+		JWTToken jwtToken = new JWTToken(user, token, LocalDateTime.now().plusHours(24));
 		jwtTokenRepository.save(jwtToken);
 		
 	}
