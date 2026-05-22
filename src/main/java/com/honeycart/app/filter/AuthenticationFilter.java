@@ -119,12 +119,11 @@ public class AuthenticationFilter implements Filter {
         
         private void setCORSHeader(HttpServletRequest request, HttpServletResponse response) {
             String origin = request.getHeader("Origin");
-            
-            // Dynamically allow local development or live Render frontend
-            if (origin != null && (origin.equals("http://localhost:5173") || origin.equals("https://honeycart-frontend.onrender.com"))) {
+
+            if (origin != null) {
                 response.setHeader("Access-Control-Allow-Origin", origin);
             }
-            
+
             response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
             response.setHeader("Access-Control-Allow-Credentials", "true");
