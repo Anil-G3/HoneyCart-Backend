@@ -75,7 +75,7 @@ All other routes require the JWT cookie to be present and valid.
 | Orders | Place order, View order history, Admin order management |
 | Payments | Razorpay order creation & payment capture |
 
-> Full endpoint details available via Postman collection — *add your collection link here*
+
 
 ---
 
