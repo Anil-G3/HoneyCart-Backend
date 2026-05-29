@@ -50,16 +50,18 @@ HoneyCart is a full-stack e-commerce platform. This backend powers everything:
 ## 🔐 Auth Flow
 
 1. User registers or logs in → server issues a signed JWT token
-2. Token is sent with every subsequent request in the `Authorization` header
-3. Spring Security filter validates the token on every protected route
-4. Role check — `ADMIN` and `CUSTOMER` routes are enforced separately
+2. Token is stored in an **HTTP Cookie** — frontend never handles it manually
+3. Cookie is automatically sent with every subsequent request by the browser
+4. Spring Security filter reads and validates the token from the cookie on every protected route
+5. Role check — `ADMIN` and `CUSTOMER` routes are enforced separately
 
 ```
 POST /api/auth/register   → Register a new user
-POST /api/auth/login      → Returns JWT token
+POST /api/auth/login      → Sets JWT token in HTTP Cookie
+POST /api/auth/logout     → Clears the cookie
 ```
 
-All other routes require `Authorization: Bearer <token>`
+All other routes require the JWT cookie to be present and valid.
 
 ---
 
