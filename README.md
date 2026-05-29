@@ -100,7 +100,7 @@ cd HoneyCart-Backend
 Create a MySQL database and update `src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/honeycart
+spring.datasource.url=jdbc:mysql://localhost:3306/db_name
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 
