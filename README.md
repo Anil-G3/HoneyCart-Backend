@@ -12,11 +12,10 @@
 ---
 
 ## 🔗 Links
-
+ 
 | | |
 |---|---|
 | 🖥️ Frontend Repo | [HoneyCart-Frontend](https://github.com/Anil-G3/HoneyCart-Frontend) |
-| 📄 API Base URL | `http://localhost:8080/api` |
 
 ---
 
