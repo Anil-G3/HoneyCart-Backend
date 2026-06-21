@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -55,56 +56,50 @@ public class CartService implements CartServiceContract{
 	}
 	
 	// Get Cart Items for a User
-		public Map<String, Object> getCartItems(User authenticatedUser) {
-			// Fetch the cart items for the user with product details
-			List<CartItem> cartItems = cartRepository.findCartItemsWithProductDetails(authenticatedUser.getUserId());
+	public Map<String, Object> getCartItems(User authenticatedUser) {
+	    List<CartItem> cartItems = cartRepository.findCartItemsWithProductDetails(authenticatedUser.getUserId());
 
-			// Create a response map to hold the cart details
-			Map<String, Object> response = new HashMap<>();
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("username", authenticatedUser.getUserId());
+	    response.put("role", authenticatedUser.getRole().toString());
 
-			response.put("username", authenticatedUser.getUserId());
-			response.put("role", authenticatedUser.getRole().toString());
+	    // Bulk-fetch images for every product in the cart in ONE query
+	    List<Integer> productIds = cartItems.stream()
+	            .map(item -> item.getProduct().getProductId())
+	            .collect(Collectors.toList());
 
-			// List to hold the product details
-			List<Map<String, Object>> products = new ArrayList<>();
-			int overallTotalPrice = 0;
+	    Map<Integer, String> firstImageByProduct = new HashMap<>();
+	    for (ProductImage img : productImageRepository.findByProduct_ProductIdIn(productIds)) {
+	        firstImageByProduct.putIfAbsent(img.getProduct().getProductId(), img.getImageUrl());
+	    }
 
-			for (CartItem cartItem : cartItems) {
-				Map<String, Object> productDetails = new HashMap<>();
+	    List<Map<String, Object>> products = new ArrayList<>();
+	    int overallTotalPrice = 0;
 
-				// Get product details
-				Product product = cartItem.getProduct();
+	    for (CartItem cartItem : cartItems) {
+	        Map<String, Object> productDetails = new HashMap<>();
+	        Product product = cartItem.getProduct();
+	        String imageUrl = firstImageByProduct.getOrDefault(product.getProductId(), "default-image-url");
 
-				// Fetch product images from the ProductImageRepository
-				List<ProductImage> productImages = productImageRepository.findByProduct_ProductId(product.getProductId());
-				String imageUrl = (productImages != null && !productImages.isEmpty()) ? productImages.get(0).getImageUrl() : "default-image-url";
+	        productDetails.put("product_id", product.getProductId());
+	        productDetails.put("image_url", imageUrl);
+	        productDetails.put("name", product.getName());
+	        productDetails.put("description", product.getDescription());
+	        productDetails.put("price_per_unit", product.getPrice());
+	        productDetails.put("quantity", cartItem.getQuantity());
+	        productDetails.put("total_price", cartItem.getQuantity() * product.getPrice().doubleValue());
 
-				// Populate product details into the map
-				productDetails.put("product_id", product.getProductId());
-				productDetails.put("image_url", imageUrl);
-				productDetails.put("name", product.getName());
-				productDetails.put("description", product.getDescription());
-				productDetails.put("price_per_unit", product.getPrice());
-				productDetails.put("quantity", cartItem.getQuantity());
-				productDetails.put("total_price", cartItem.getQuantity() * product.getPrice().doubleValue());
+	        products.add(productDetails);
+	        overallTotalPrice += cartItem.getQuantity() * product.getPrice().doubleValue();
+	    }
 
-				// Add the product details to the products list
-				products.add(productDetails);
+	    Map<String, Object> cart = new HashMap<>();
+	    cart.put("products", products);
+	    cart.put("overall_total_price", overallTotalPrice);
 
-				// Add to the overall total price
-				overallTotalPrice += cartItem.getQuantity() * product.getPrice().doubleValue();
-			}
-
-			// Prepare the final cart response
-			Map<String, Object> cart = new HashMap<>();
-			cart.put("products", products);
-			cart.put("overall_total_price", overallTotalPrice);
-
-			// Add the cart details to the response
-			response.put("cart", cart);
-
-			return response;
-		}
+	    response.put("cart", cart);
+	    return response;
+	}
 		
 		@Override
 		public void updateCartItemQuantity(User authenticatedUser, int productId, int quantity) {

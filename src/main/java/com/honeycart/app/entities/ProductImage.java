@@ -1,6 +1,5 @@
 package com.honeycart.app.entities;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,7 +18,7 @@ public class ProductImage {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer imageId;
 	
-	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id", nullable=false)
 	private Product product;
 	

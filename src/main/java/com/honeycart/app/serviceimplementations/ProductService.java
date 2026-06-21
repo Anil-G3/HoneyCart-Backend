@@ -1,7 +1,9 @@
 package com.honeycart.app.serviceimplementations;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -47,16 +49,24 @@ public class ProductService implements ProductServiceContract{
 	}
 
 	@Override
-	public List<String> getProductImages(Integer productId) {
-		
-		List<ProductImage> productImages = productImageRepository.findByProduct_ProductId(productId);
-		List<String> imageUrls = new ArrayList<>();
-		
-		for (ProductImage image : productImages) {
-			imageUrls.add(image.getImageUrl());
-		}
-		
-		return imageUrls;
+	public Map<Integer, List<String>> getImagesForProductIds(List<Integer> productIds) {
+	    Map<Integer, List<String>> imagesByProduct = new HashMap<>();
+	    for (ProductImage img : productImageRepository.findByProduct_ProductIdIn(productIds)) {
+	        imagesByProduct
+	            .computeIfAbsent(img.getProduct().getProductId(), k -> new ArrayList<>())
+	            .add(img.getImageUrl());
+	    }
+	    return imagesByProduct;
+	}
+	
+	@Override
+	public List<Product> getCategoryPreviews(List<String> categoryNames) {
+	    List<Product> previews = new ArrayList<>();
+	    for (String name : categoryNames) {
+	        Product p = productRepository.findFirstByCategory_CategoryNameOrderByProductIdAsc(name);
+	        if (p != null) previews.add(p);
+	    }
+	    return previews;
 	}
 
 }

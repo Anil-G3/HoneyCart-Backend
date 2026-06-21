@@ -14,6 +14,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 	List<Product> findByCategory_CategoryId(Integer categoryId);
 	
+	Product findFirstByCategory_CategoryNameOrderByProductIdAsc(String categoryName);
+	
 	@Query("SELECT p.category.categoryName FROM Product p WHERE p.productId = :productId")
 	String findCategoryNameByProductId(int productId);
 	

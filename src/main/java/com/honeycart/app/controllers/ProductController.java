@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,29 +32,30 @@ public class ProductController {
 	
 	@GetMapping 
 	public ResponseEntity<Map<String, Object>> getProducts(@RequestParam(required = false) String category, HttpServletRequest request) {
-	
+
 		try
 		{
-			//Retrieve authenticated user from the request attribute set by the filter
 			User authenticatedUser = (User) request.getAttribute("authenticatedUser");
 			
 			if (authenticatedUser == null) {
 				return ResponseEntity.status(401).body(Map.of("error", "Unauthorized access"));
 			}
 			
-			// Fetch products based on the category filter
 			List<Product> products = productService.getProductsByCategory(category);
 			
-			// Build the response
+			// Fetch images for ALL products in one query instead of one query per product
+			List<Integer> productIds = products.stream()
+					.map(Product::getProductId)
+					.collect(Collectors.toList());
+			Map<Integer, List<String>> imagesByProduct = productService.getImagesForProductIds(productIds);
+			
 			Map<String, Object> response = new HashMap<>();
 			
-			// Add user info
 			Map<String, String> userInfo = new HashMap<>();
 			userInfo.put("name", authenticatedUser.getUsername());
 			userInfo.put("role", authenticatedUser.getRole().name());
 			response.put("user", userInfo);
 			
-			// Add product details
 			List<Map<String, Object>> productList = new ArrayList<>();
 			for (Product product : products) {
 				Map<String, Object> productDetails = new HashMap<>();
@@ -62,12 +64,8 @@ public class ProductController {
 				productDetails.put("description", product.getDescription());
 				productDetails.put("price", product.getPrice());
 				productDetails.put("stock", product.getStock());
-				
-				// Fetch product images
-				List<String> images = productService.getProductImages(product.getProductId());
-				productDetails.put("images", images);
+				productDetails.put("images", imagesByProduct.getOrDefault(product.getProductId(), List.of()));
 				productList.add(productDetails);
-			
 			}
 			
 			response.put("products", productList);
@@ -79,6 +77,36 @@ public class ProductController {
 			return ResponseEntity.badRequest().body(Map.of("error", re.getMessage()));
 		}
 
+	}
+	
+	@GetMapping("/preview")
+	public ResponseEntity<Map<String, Object>> getCategoryPreviews(
+	        @RequestParam List<String> categories, HttpServletRequest request) {
+
+	    User authenticatedUser = (User) request.getAttribute("authenticatedUser");
+	    if (authenticatedUser == null) {
+	        return ResponseEntity.status(401).body(Map.of("error", "Unauthorized access"));
+	    }
+
+	    List<Product> products = productService.getCategoryPreviews(categories);
+
+	    List<Integer> productIds = products.stream().map(Product::getProductId).collect(Collectors.toList());
+	    Map<Integer, List<String>> imagesByProduct = productService.getImagesForProductIds(productIds);
+
+	    List<Map<String, Object>> productList = new ArrayList<>();
+	    for (Product product : products) {
+	        Map<String, Object> details = new HashMap<>();
+	        details.put("product_id", product.getProductId());
+	        details.put("name", product.getName());
+	        details.put("description", product.getDescription());
+	        details.put("price", product.getPrice());
+	        details.put("stock", product.getStock());
+	        details.put("categoryName", product.getCategory().getCategoryName());
+	        details.put("images", imagesByProduct.getOrDefault(product.getProductId(), List.of()));
+	        productList.add(details);
+	    }
+
+	    return ResponseEntity.ok(Map.of("products", productList));
 	}
 		
 

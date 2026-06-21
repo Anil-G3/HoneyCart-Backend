@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -42,27 +43,35 @@ public class OrderService implements OrderServiceContract {
     
     @Override
     public Map<String, Object> getOrdersForUser(User user) {
-        // Fetch all successful order items for the user
         List<OrderItem> orderItems = orderItemRepository.findSuccessfulOrderItemsByUserId(user.getUserId());
 
-        // Prepare the response map
         Map<String, Object> response = new HashMap<>();
         response.put("username", user.getUsername());
-        response.put("role", user.getRole()); // Directly use the role as it is an enum mapped to a string
+        response.put("role", user.getRole());
 
-        // Transform order items into a list of product details
+        // Bulk-fetch all products for these order items in ONE query
+        List<Integer> productIds = orderItems.stream()
+                .map(OrderItem::getProductId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<Integer, Product> productsById = productRepository.findAllById(productIds).stream()
+                .collect(Collectors.toMap(Product::getProductId, p -> p));
+
+        // Bulk-fetch the first image for each product in ONE query
+        Map<Integer, String> firstImageByProduct = new HashMap<>();
+        for (ProductImage img : productImageRepository.findByProduct_ProductIdIn(productIds)) {
+            firstImageByProduct.putIfAbsent(img.getProduct().getProductId(), img.getImageUrl());
+        }
+
         List<Map<String, Object>> products = new ArrayList<>();
         for (OrderItem item : orderItems) {
-            Product product = productRepository.findById(item.getProductId()).orElse(null);
+            Product product = productsById.get(item.getProductId());
             if (product == null) {
-                continue; // Skip if the product does not exist
+                continue;
             }
+            String imageUrl = firstImageByProduct.get(product.getProductId());
 
-            // Fetch the product image (if available)
-            List<ProductImage> images = productImageRepository.findByProduct_ProductId(product.getProductId());
-            String imageUrl = images.isEmpty() ? null : images.get(0).getImageUrl();
-
-            // Create a product details map
             Map<String, Object> productDetails = new HashMap<>();
             productDetails.put("order_id", item.getOrder().getOrderId());
             productDetails.put("quantity", item.getQuantity());
@@ -72,13 +81,10 @@ public class OrderService implements OrderServiceContract {
             productDetails.put("name", product.getName());
             productDetails.put("description", product.getDescription());
             productDetails.put("price_per_unit", item.getPricePerUnit());
-
             products.add(productDetails);
         }
 
-        // Add the products list to the response
         response.put("products", products);
-
         return response;
     }
 }
